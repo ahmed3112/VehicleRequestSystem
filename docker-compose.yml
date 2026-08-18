@@ -4,8 +4,11 @@ services:
     container_name: parking-management
     ports:
       - "5000:5000"
+    environment:
+      DB_PATH: /data/parking.db
+      SECRET_KEY: change-this-secret
     volumes:
-      - parking_data:/app
+      - parking_data:/data
     restart: unless-stopped
 
 volumes:

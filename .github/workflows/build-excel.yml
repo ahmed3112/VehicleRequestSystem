@@ -1,0 +1,41 @@
+name: Build Excel
+on:
+  push:
+    paths:
+      - 'data/parking.csv'
+      - '.github/workflows/build-excel.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - name: Create Excel file
+        run: |
+          pip install openpyxl
+          python - <<'PY'
+          import csv
+          from openpyxl import Workbook
+          from pathlib import Path
+          src=Path('data/parking.csv')
+          out=Path('data/parking.xlsx')
+          wb=Workbook()
+          ws=wb.active
+          ws.title='العربيات'
+          with src.open('r',encoding='utf-8-sig',newline='') as f:
+              for row in csv.reader(f): ws.append(row)
+          wb.create_sheet('خطوط السير')
+          wb.save(out)
+          PY
+      - name: Commit Excel
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add data/parking.xlsx
+          git diff --cached --quiet || git commit -m 'Build parking Excel database'
+          git push
